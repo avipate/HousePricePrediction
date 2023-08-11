@@ -6,3 +6,4 @@ df = pd.read_csv('Data/HousePrice.csv')
 print(df.head())
 print(df.tail())
 
+print(df.info)
