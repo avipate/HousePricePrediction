@@ -317,7 +317,16 @@ class HousePricePrediction:
         self.x_train.to_csv("Data/xtrain.csv", index=False)
         self.x_test.to_csv("Data/xtest.csv", index=False)
 
+        self.y_train.to_csv("Data/ytrain.csv", index=False)
+        self.y_test.to_csv("Data/ytest.csv", index=False)
+
         joblib.dump(scaler, "minmax_scaler.joblib")
+
+    def ml_pipeline(self):
+        X_train = pd.read_csv("Data/xtrain.csv")
+        X_test = pd.read_csv("Data/xtest.csv")
+
+        print(X_train.head())
 
 
 if __name__ == "__main__":
