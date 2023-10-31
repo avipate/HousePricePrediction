@@ -1,14 +1,18 @@
 # Importing required libraries
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from scipy import stats
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import Lasso
+from sklearn.feature_selection import SelectFromModel
 
 
 class HousePricePrediction:
     def __init__(self, path="Data/HousePrice.csv"):
         self.df = pd.read_csv(path)
         self.x_train, self.x_test, self.y_train, self.y_test = None, None, None, None
+        self.model = Lasso()
 
     # Splitting the dataset
     def feature_engineering(self):
@@ -291,7 +295,31 @@ class HousePricePrediction:
         ]
         print(null)
 
+    def feature_scaling(self):
+        self.feature_engineering()
+        # create scaler
+        scaler = MinMaxScaler()
+
+        # fit the scaler to the train set
+        scaler.fit(self.x_train)
+
+        # Transform the train and test
+        # sklearn return numpy arrays, so we wrap the array with a pandas dataframe
+        self.x_train = pd.DataFrame(
+            scaler.transform(self.x_train), columns=self.x_train.columns
+        )
+        self.x_test = pd.DataFrame(
+            scaler.transform(self.x_test), columns=self.x_test.columns
+        )
+        print(self.x_train.head())
+
+        # Let's now save the train and test sets to csv
+        self.x_train.to_csv("Data/xtrain.csv", index=False)
+        self.x_test.to_csv("Data/xtest.csv", index=False)
+
+        joblib.dump(scaler, "minmax_scaler.joblib")
+
 
 if __name__ == "__main__":
     model = HousePricePrediction()
-    model.feature_engineering()
+    model.feature_scaling()
