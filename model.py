@@ -322,7 +322,7 @@ class HousePricePrediction:
 
         joblib.dump(scaler, "minmax_scaler.joblib")
 
-    def feature_scaling(self):
+    def ml_pipeline(self):
         x_train = pd.read_csv("Data/xtrain.csv")
         x_test = pd.read_csv("Data/xtest.csv")
 
@@ -352,12 +352,30 @@ class HousePricePrediction:
 
         pd.Series(selected_feats).to_csv('Data/selected_features.csv', index=False)
 
-    def ml_pipeline(self):
-        self.feature_scaling()
         # Load the pre-selected features
         features = pd.read_csv('Data/selected_features.csv')
         features = features['0'].to_list()
-        print(features)
+
+        # model
+        lin_model = Lasso(alpha=0.001, random_state=0)
+
+        # Train the model
+        lin_model.fit(x_train, y_train)
+
+        # Prediction
+        pred = lin_model.predict(x_train)
+
+        print(f'Train mse: {float(mean_squared_error(y_train, pred))}')
+        print(f'Train r2 score: {float(r2_score(y_train, pred))}')
+
+        # Make prediction for test set
+        pred = lin_model.predict(x_test)
+
+        print(f'Test mse: {float(mean_squared_error(y_test, pred))}')
+        print(f'Test r2 score: {float(r2_score(y_test, pred))}')
+
+        # Save the model
+        joblib.dump(lin_model, 'Models/linear_regression.joblib')
 
 
 if __name__ == "__main__":
