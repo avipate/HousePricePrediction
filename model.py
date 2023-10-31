@@ -6,16 +6,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import Lasso
 from sklearn.feature_selection import SelectFromModel
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 class HousePricePrediction:
     def __init__(self, path="Data/HousePrice.csv"):
         self.df = pd.read_csv(path)
         self.x_train, self.x_test, self.y_train, self.y_test = None, None, None, None
-        self.model = Lasso()
 
     # Splitting the dataset
-    def feature_engineering(self):
+    def data_preprocessing(self):
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
             self.df.drop(["Id", "SalePrice"], axis=1),
             self.df["SalePrice"],
@@ -295,8 +295,8 @@ class HousePricePrediction:
         ]
         print(null)
 
-    def feature_scaling(self):
-        self.feature_engineering()
+    def feature_engineering(self):
+        self.data_preprocessing()
         # create scaler
         scaler = MinMaxScaler()
 
@@ -322,13 +322,44 @@ class HousePricePrediction:
 
         joblib.dump(scaler, "minmax_scaler.joblib")
 
-    def ml_pipeline(self):
-        X_train = pd.read_csv("Data/xtrain.csv")
-        X_test = pd.read_csv("Data/xtest.csv")
+    def feature_scaling(self):
+        x_train = pd.read_csv("Data/xtrain.csv")
+        x_test = pd.read_csv("Data/xtest.csv")
 
-        print(X_train.head())
+        # Load the target
+        y_train = pd.read_csv('Data/ytrain.csv')
+        y_test = pd.read_csv('Data/ytest.csv')
+
+        # Feature selection steps
+        # First, we specify the Lasso Regression Model and select a suitable alpha (equivalent of penalty)
+        # Then we use the selectFrom Model object from sklearn, which will select automatically the
+        # features which coefficients are non-zero
+
+        sel_ = SelectFromModel(Lasso(alpha=0.001, random_state=0))
+
+        # train Lasso model and select features
+        sel_.fit(x_train, y_train)
+        print(sel_.get_support().sum())
+
+        # Let's print the number of total and selected features
+        selected_feats = x_train.columns[(sel_.get_support())]
+
+        # let's print some stats
+        print(f'Total features: {x_train.shape[1]}')
+        print(f'Selected features: {len(selected_feats)}')
+        print(f'Features with coefficients shrank to zero: {np.sum(sel_.estimator_.coef_ == 0)}')
+        print(selected_feats)
+
+        pd.Series(selected_feats).to_csv('Data/selected_features.csv', index=False)
+
+    def ml_pipeline(self):
+        self.feature_scaling()
+        # Load the pre-selected features
+        features = pd.read_csv('Data/selected_features.csv')
+        features = features['0'].to_list()
+        print(features)
 
 
 if __name__ == "__main__":
     model = HousePricePrediction()
-    model.feature_scaling()
+    model.ml_pipeline()
