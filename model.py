@@ -327,8 +327,8 @@ class HousePricePrediction:
         x_test = pd.read_csv("Data/xtest.csv")
 
         # Load the target
-        y_train = pd.read_csv('Data/ytrain.csv')
-        y_test = pd.read_csv('Data/ytest.csv')
+        y_train = pd.read_csv("Data/ytrain.csv")
+        y_test = pd.read_csv("Data/ytest.csv")
 
         # Feature selection steps
         # First, we specify the Lasso Regression Model and select a suitable alpha (equivalent of penalty)
@@ -345,16 +345,18 @@ class HousePricePrediction:
         selected_feats = x_train.columns[(sel_.get_support())]
 
         # let's print some stats
-        print(f'Total features: {x_train.shape[1]}')
-        print(f'Selected features: {len(selected_feats)}')
-        print(f'Features with coefficients shrank to zero: {np.sum(sel_.estimator_.coef_ == 0)}')
+        print(f"Total features: {x_train.shape[1]}")
+        print(f"Selected features: {len(selected_feats)}")
+        print(
+            f"Features with coefficients shrank to zero: {np.sum(sel_.estimator_.coef_ == 0)}"
+        )
         print(selected_feats)
 
-        pd.Series(selected_feats).to_csv('Data/selected_features.csv', index=False)
+        pd.Series(selected_feats).to_csv("Data/selected_features.csv", index=False)
 
         # Load the pre-selected features
-        features = pd.read_csv('Data/selected_features.csv')
-        features = features['0'].to_list()
+        features = pd.read_csv("Data/selected_features.csv")
+        features = features["0"].to_list()
 
         # model
         lin_model = Lasso(alpha=0.001, random_state=0)
@@ -365,17 +367,17 @@ class HousePricePrediction:
         # Prediction
         pred = lin_model.predict(x_train)
 
-        print(f'Train mse: {float(mean_squared_error(y_train, pred))}')
-        print(f'Train r2 score: {float(r2_score(y_train, pred))}')
+        print(f"Train mse: {float(mean_squared_error(y_train, pred))}")
+        print(f"Train r2 score: {float(r2_score(y_train, pred))}")
 
         # Make prediction for test set
         pred = lin_model.predict(x_test)
 
-        print(f'Test mse: {float(mean_squared_error(y_test, pred))}')
-        print(f'Test r2 score: {float(r2_score(y_test, pred))}')
+        print(f"Test mse: {float(mean_squared_error(y_test, pred))}")
+        print(f"Test r2 score: {float(r2_score(y_test, pred))}")
 
         # Save the model
-        joblib.dump(lin_model, 'Models/linear_regression.joblib')
+        joblib.dump(lin_model, "Models/linear_regression.joblib")
 
 
 if __name__ == "__main__":
